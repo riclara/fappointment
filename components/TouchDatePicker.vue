@@ -1,15 +1,22 @@
 <template>
   <div class="date-container">
-    <input
-      :id="id+'-output'"
-      v-model="outputDate"
-      type="text"
-      readonly
-      :placeholder="placeholder"
-      v-bind="$attrs"
-      :class="inputClass"
-      @focus="showCalendar"
-    >
+    <div class="input-group">
+      <div class="input-group-prepend">
+        <div class="input-group-text">
+          &#128197;
+        </div>
+      </div>
+      <input
+        :id="id+'-output'"
+        v-model="outputDate"
+        type="text"
+        readonly
+        :placeholder="placeholder"
+        v-bind="$attrs"
+        :class="inputClass"
+        @focus="showCalendar"
+      >
+    </div>
     <input
       :id="id"
       v-model="modelValue"

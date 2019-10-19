@@ -51,7 +51,7 @@
 }
 
 .Triangle--four {
-  top: 120px;
+  top: 100px;
   left: 70px;
   animation: godown 0.5s linear forwards 3s;
   border-left: 35px solid transparent;

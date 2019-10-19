@@ -6,8 +6,8 @@
   "private": true,
   "scripts": {
     "dev": "nuxt --port 5000",
-    "build": "nuxt build",
-    "start": "nuxt start",
+    "build": "nuxt generate",
+    "start": "export NODE_ENV=production && nuxt start",
     "generate": "nuxt generate",
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore .",
     "test": "jest"

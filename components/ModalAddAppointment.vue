@@ -2,11 +2,25 @@
   <div>
     <b-modal
       :id="id"
-      title="Add Appointment"
       ref="modal"
+      title="Add Appointment"
       @hidden="onReset"
       @ok="onSubmit"
     >
+      <div v-if="message" class="m-2 alert alert-warning" role="alert">
+        {{ message }}
+      </div>
+      <div v-if="detailMessages.length" class="m-2 alert alert-warning" role="alert">
+        <ul>
+          <li
+            v-for="(detail, idx) in detailMessages"
+            :key="idx"
+          >
+            {{ detail.message }}
+          </li>
+        </ul>
+        {{ message }}
+      </div>
       <b-form v-if="show">
         <b-form-group
           id="input-group-1"
@@ -35,6 +49,7 @@
   </div>
 </template>
 <script>
+const api = process.env.NODE_ENV === 'production' ? 'https://evening-fortress-57965.herokuapp.com' : 'http://localhost:8000'
 export default {
   props: {
     id: {
@@ -49,7 +64,10 @@ export default {
       type: String,
       required: true
     },
-    appointment: Object
+    appointment: {
+      type: Object,
+      default: null
+    }
   },
   data () {
     return {
@@ -58,7 +76,9 @@ export default {
         name: '',
         description: ''
       },
-      show: true
+      show: true,
+      message: '',
+      detailMessages: []
     }
   },
   watch: {
@@ -67,6 +87,13 @@ export default {
         this.form.email = this.appointment.email
         this.form.name = this.appointment.name
         this.form.description = this.appointment.description
+      }
+    },
+    message (val) {
+      if (val.length) {
+        setTimeout(() => {
+          this.message = ''
+        }, 5000)
       }
     }
   },
@@ -78,22 +105,44 @@ export default {
       this.form.month = dateSplit[1]
       this.form.day = dateSplit[2]
       this.form.hour = this.hour
-      this.$axios.$post('http://localhost:8000/appointment', this.form)
-        .then((response) => {
-          this.$emit('submitted', response)
-          this.$refs.modal.hide()
-        })
-        .catch((error) => {
-          console.error(error.response)
-        })
+      if (this.appointment) {
+        this.$axios.$put(`${api}/appointment/${this.appointment.id}`, this.form)
+          .then((response) => {
+            this.$emit('submitted', response)
+            this.$refs.modal.hide()
+          })
+          .catch((error) => {
+            if (error.response && error.response.status === 422) {
+              this.detailMessages = error.response.data.error.details
+            } else {
+              this.message = 'Error: please contact us'
+            }
+          })
+      } else {
+        this.$axios.$post(`${api}/appointment`, this.form)
+          .then((response) => {
+            this.$emit('submitted', response)
+            this.$refs.modal.hide()
+          })
+          .catch((error) => {
+            if (error.response && error.response.status === 422) {
+              this.detailMessages = error.response.data.error.details
+            } else {
+              this.message = 'Error: please contact us'
+            }
+          })
+      }
     },
     onReset (evt) {
       evt.preventDefault()
       // Reset our form values
       this.form.email = ''
       this.form.name = ''
-      // Trick to reset/clear native browser form validation state
+      this.form.description = ''
       this.show = false
+      this.message = ''
+      this.detailMessages = []
+      // Trick to reset/clear native browser form validation state
       this.$nextTick(() => {
         this.show = true
       })

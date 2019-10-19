@@ -9,7 +9,14 @@
         My marvelous Nuxt.js project
       </h2>
       <div class="links">
-        <datepicker id="dob" v-model="value" name="datepicker" language="en" />
+        <datepicker
+          id="dob"
+          v-model="value"
+          inputClass="form-control"
+          placeholder="Select a date"
+          name="datepicker"
+          language="en"
+        />
       </div>
       <div v-if="value && isWeekend" class="m-2 alert alert-warning" role="alert">
         Must select working days
@@ -27,20 +34,25 @@
             <th scope="col">
               Email
             </th>
+            <th>
+              Action
+            </th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="i in 10" :key="i" @click="showModal(i)">
+          <tr v-for="i in 10" :key="i">
             <th scope="row">
               {{ i + 8 }}:00
             </th>
             <template v-if="appointments[i + 8]">
-              <td>{{ appointments[i + 8].name }}</td>
-              <td>{{ appointments[i + 8].email }}</td>
+              <td class="pointer" @click="showModal(i)">{{ appointments[i + 8].name }}</td>
+              <td class="pointer" @click="showModal(i)">{{ appointments[i + 8].email }}</td>
+              <td>
+                <button type="button" class="btn btn-outline-danger" @click="remove(i + 8)">Remove</button>
+              </td>
+
             </template>
-            <td v-else colspan="2">
-              <b-button block variant="outline-primary">Add</b-button>
-            </td>
+            <td class="pointer" v-else colspan="3" @click="showModal(i)" />
           </tr>
         </tbody>
       </table>
@@ -61,6 +73,7 @@ import moment from 'moment'
 import Datepicker from '~/components/TouchDatePicker.vue'
 import ModalAddAppointment from '~/components/ModalAddAppointment.vue'
 import Logo from '~/components/Logo.vue'
+const api = process.env.NODE_ENV === 'production' ? 'https://evening-fortress-57965.herokuapp.com' : 'http://localhost:8000'
 
 export default {
   components: {
@@ -96,7 +109,7 @@ export default {
   },
   methods: {
     loadDay () {
-      this.$axios.$get(`http://localhost:8000/appointments/date/${this.value}`)
+      this.$axios.$get(`${api}/appointments/date/${this.value}`)
         .then((response) => {
           this.appointments = response.reduce((curr, val) => {
             curr[val.hour] = val
@@ -111,6 +124,21 @@ export default {
       this.hour = (idx + 8).toString()
       this.appointmentsSelected = this.appointments[this.hour]
       this.$bvModal.show('modal-1')
+    },
+    remove (id) {
+      const resp = confirm('are you sure?')
+      if (resp) {
+        const app = this.appointments[id.toString()]
+        if (app) {
+          this.$axios.$delete(`${api}/appointment/${app.id}`)
+            .then((response) => {
+              this.loadDay()
+            })
+            .catch((error) => {
+              console.error(error)
+            })
+        }
+      }
     }
   }
 }
@@ -146,5 +174,9 @@ export default {
 
 .links {
   padding-top: 15px;
+}
+
+.pointer {
+  cursor: pointer;
 }
 </style>
