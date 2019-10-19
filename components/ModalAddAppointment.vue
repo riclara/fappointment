@@ -49,7 +49,7 @@
   </div>
 </template>
 <script>
-const api = process.env.NODE_ENV === 'production' ? 'https://evening-fortress-57965.herokuapp.com' : 'http://localhost:8000'
+import { mapState } from 'vuex'
 export default {
   props: {
     id: {
@@ -81,6 +81,9 @@ export default {
       detailMessages: []
     }
   },
+  computed: {
+    ...mapState('common', ['api'])
+  },
   watch: {
     appointment (val) {
       if (val) {
@@ -106,7 +109,7 @@ export default {
       this.form.day = dateSplit[2]
       this.form.hour = this.hour
       if (this.appointment) {
-        this.$axios.$put(`${api}/appointment/${this.appointment.id}`, this.form)
+        this.$axios.$put(`${this.api}/appointment/${this.appointment.id}`, this.form)
           .then((response) => {
             this.$emit('submitted', response)
             this.$refs.modal.hide()
@@ -119,7 +122,7 @@ export default {
             }
           })
       } else {
-        this.$axios.$post(`${api}/appointment`, this.form)
+        this.$axios.$post(`${this.api}/appointment`, this.form)
           .then((response) => {
             this.$emit('submitted', response)
             this.$refs.modal.hide()

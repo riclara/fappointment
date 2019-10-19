@@ -69,11 +69,11 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
 import moment from 'moment'
 import Datepicker from '~/components/TouchDatePicker.vue'
 import ModalAddAppointment from '~/components/ModalAddAppointment.vue'
 import Logo from '~/components/Logo.vue'
-const api = process.env.NODE_ENV === 'production' ? 'https://evening-fortress-57965.herokuapp.com' : 'http://localhost:8000'
 
 export default {
   components: {
@@ -99,6 +99,10 @@ export default {
     }
   },
   computed: {
+    ...mapState('common', ['api']),
+    // api () {
+    //   return this.$store.state.common.api
+    // },
     isWeekend () {
       if (this.value) {
         const dayOfWeek = moment(this.value).day()
@@ -109,7 +113,7 @@ export default {
   },
   methods: {
     loadDay () {
-      this.$axios.$get(`${api}/appointments/date/${this.value}`)
+      this.$axios.$get(`${this.api}/appointments/date/${this.value}`)
         .then((response) => {
           this.appointments = response.reduce((curr, val) => {
             curr[val.hour] = val
@@ -130,7 +134,7 @@ export default {
       if (resp) {
         const app = this.appointments[id.toString()]
         if (app) {
-          this.$axios.$delete(`${api}/appointment/${app.id}`)
+          this.$axios.$delete(`${this.api}/appointment/${app.id}`)
             .then((response) => {
               this.loadDay()
             })
